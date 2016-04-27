@@ -20,7 +20,7 @@ UPSTREAM="$(git rev-parse --verify FETCH_HEAD)"
 if [ "$TRAVIS_BRANCH" = 'master' -a "$TRAVIS_PULL_REQUEST" = 'false' ]; then
 	# if we're testing master itself, RUN ALL THE THINGS
 	echo >&2 'Testing master -- BUILD ALL THE THINGS!'
-elif [ "$(git diff --numstat "$UPSTREAM...$HEAD" -- . | wc -l)" -ne 0 ]; then
+elif [ "$(git diff --numstat "$UPSTREAM...$HEAD" -- bashbrew/ | wc -l)" -ne 0 ]; then
 	# changes in bashbrew/ -- keep "--all" so we test the bashbrew script changes appropriately
 	echo >&2 'Changes in bashbrew/ detected!'
 else
@@ -32,12 +32,11 @@ if [ "${#repos[@]}" -eq 0 ]; then
 	exit
 fi
 
-# --no-build because we has no Docker in Travis :)
-# TODO that will change eventually!
-
 set -x
 ./bashbrew.sh list --uniq "${repos[@]}"
 ./bashbrew.sh list "${repos[@]}"
 ./bashbrew.sh build --no-build "${repos[@]}"
 ./bashbrew.sh push --no-push "${repos[@]}"
-# TODO ./bashbrew.sh list "${repos[@]}" | xargs ../test/run.sh
+
+./bashbrew.sh build "${repos[@]}"
+./bashbrew.sh list "${repos[@]}" | xargs ../test/run.sh
