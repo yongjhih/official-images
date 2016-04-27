@@ -32,12 +32,21 @@ if [ "${#repos[@]}" -eq 0 ]; then
 	exit
 fi
 
-# --no-build because we has no Docker in Travis :)
-# TODO that will change eventually!
+contains() {
+  local e
+  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+  return 1
+}
 
 set -x
 ./bashbrew.sh list --uniq "${repos[@]}"
 ./bashbrew.sh list "${repos[@]}"
 ./bashbrew.sh build --no-build "${repos[@]}"
 ./bashbrew.sh push --no-push "${repos[@]}"
-# TODO ./bashbrew.sh list "${repos[@]}" | xargs ../test/run.sh
+
+set +x
+if ! contains "--all" "${repos[@]}"; then
+	set -x
+	./bashbrew.sh build "${repos[@]}"
+	./bashbrew.sh list "${repos[@]}" | xargs ../test/run.sh
+fi
